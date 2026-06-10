@@ -5,116 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora CIF - Moçambique</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f9;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 550px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        h2 { color: #1e3a8a; margin-top: 0; text-align: center; }
-        p { text-align: center; color: #666; font-size: 14px; }
-        .row {
-            display: flex;
-            gap: 15px;
-        }
-        .col {
-            flex: 1;
-        }
-        label { font-weight: bold; display: block; margin-top: 15px; color: #333; }
-        select, input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 25px;
-        }
-        button {
-            flex: 1;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+        body { font-family: sans-serif; background-color: #f4f6f9; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; width: 100%; }
+        h2 { color: #1e3a8a; text-align: center; margin-top: 0; }
+        p { text-align: center; color: #666; font-size: 13px; }
+        .row { display: flex; gap: 10px; }
+        .col { flex: 1; }
+        label { font-weight: bold; display: block; margin-top: 12px; color: #333; font-size: 14px; }
+        select, input { width: 100%; padding: 8px; margin-top: 4px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        button { flex: 1; color: white; padding: 10px; border: none; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; }
         .btn-calc { background-color: #10b981; }
-        .btn-calc:hover { background-color: #059669; }
         .btn-clear { background-color: #6b7280; }
-        .btn-clear:hover { background-color: #4b5563; }
         .btn-pdf { background-color: #3b82f6; width: 100%; margin-top: 15px; }
-        .btn-pdf:hover { background-color: #2563eb; }
-        .result-box {
-            margin-top: 30px;
-            border-top: 2px dashed #ddd;
-            padding-top: 20px;
-        }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { padding: 10px 0; border-bottom: 1px solid #eee; color: #444; font-size: 14px; }
+        .result-box { margin-top: 25px; border-top: 2px dashed #ddd; padding-top: 15px; display: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        td { padding: 8px 0; border-bottom: 1px solid #eee; color: #444; font-size: 13px; }
         td:last-child { text-align: right; font-weight: bold; }
-        .total-row { font-size: 18px; color: #b91c1c; }
-        footer {
-            margin-top: 10px;
-            color: #777;
-            font-size: 13px;
-            text-align: center;
-        }
-        @media print {
-            body { background-color: #fff; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; }
-            form, .btn-group, .btn-pdf, footer { display: none !important; }
-            .result-box { border-top: none; margin-top: 0; padding-top: 0; display: block !important; }
-        }
+        .total-row { font-size: 16px; color: #b91c1c; }
+        footer { margin-top: 20px; color: #777; font-size: 12px; text-align: center; }
+        @media print { form, .btn-group, .btn-pdf, footer { display: none !important; } .result-box { display: block !important; border: none; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🇲🇿 Calculadora de Importação (Auto-Despacho)</h2>
-        <p>Modalidade: Levantamento Pessoal no Terminal de Carga</p>
+        <h2>🇲🇿 Calculadora de Importação</h2>
+        <p>Levantamento Pessoal no Terminal de Carga</p>
 
-        <form id="calc-form">
+        <form id="meuFormulario">
             <label for="dispositivo">Tipo de Dispositivo:</label>
             <select id="dispositivo">
                 <option value="telemovel" data-direitos="7.5" data-ice="0" data-sh="8517.12.00">Telemóvel (SH 8517.12.00)</option>
                 <option value="laptop" data-direitos="5" data-ice="0" data-sh="8471.30.00">Computador Portátil / Laptop (SH 8471.30.00)</option>
                 <option value="desktop" data-direitos="5" data-ice="0" data-sh="8471.41.00">Computador Desktop (SH 8471.41.00)</option>
                 <option value="tablet" data-direitos="5" data-ice="0" data-sh="8471.30.00">Tablet / iPad (SH 8471.30.00)</option>
-                <option value="smartwatch" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Relógio Inteligente / Smartwatch (SH 8517.62.00)</option>
+                <option value="smartwatch" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Relógio Inteligente (SH 8517.62.00)</option>
                 <option value="monitor" data-direitos="20" data-ice="0" data-sh="8528.52.00">Monitor de Vídeo (SH 8528.52.00)</option>
                 <option value="tv" data-direitos="20" data-ice="10" data-sh="8528.72.00">Televisor / TV (SH 8528.72.00)</option>
-                <option value="fones" data-direitos="20" data-ice="0" data-sh="8518.30.00">Auscultadores / Fones de Ouvido (SH 8518.30.00)</option>
+                <option value="fones" data-direitos="20" data-ice="0" data-sh="8518.30.00">Auscultadores / Fones (SH 8518.30.00)</option>
                 <option value="consola" data-direitos="20" data-ice="10" data-sh="9504.50.00">Consola de Videojogos (SH 9504.50.00)</option>
-                <option value="camara" data-direitos="20" data-ice="0" data-sh="8525.80.00">Câmara Fotográfica / Filmar (SH 8525.80.00)</option>
+                <option value="camara" data-direitos="20" data-ice="0" data-sh="8525.80.00">Câmara Fotográfica (SH 8525.80.00)</option>
                 <option value="powerbank" data-direitos="7.5" data-ice="0" data-sh="8504.40.00">Powerbank / Baterias (SH 8504.40.00)</option>
-                <option value="roteador" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Roteador / Modem Wi-Fi (SH 8517.62.00)</option>
+                <option value="roteador" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Roteador Wi-Fi (SH 8517.62.00)</option>
             </select>
 
             <div class="row">
                 <div class="col" style="flex: 2;">
                     <label for="valor-cif">Valor CIF Unidade:</label>
-                    <input type="number" id="valor-cif" placeholder="Ex: 500" required step="0.01">
+                    <input type="number" id="valor-cif" placeholder="Ex: 500" step="0.01">
                 </div>
                 <div class="col" style="flex: 1;">
                     <label for="moeda">Moeda:</label>
-                    <select id="moeda" onchange="mudarMoedaAcao()">
+                    <select id="moeda" onchange="mudarMoeda()">
                         <option value="USD">USD ($)</option>
                         <option value="ZAR">ZAR (R)</option>
                     </select>
@@ -127,34 +69,34 @@
                     <input type="number" id="qtd" value="1" min="1">
                 </div>
                 <div class="col">
-                    <label for="taxa-cambio">Taxa de Câmbio (para MT):</label>
+                    <label for="taxa-cambio">Câmbio (para MT):</label>
                     <input type="number" id="taxa-cambio" value="64.00" step="0.01">
                 </div>
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn-clear" onclick="limparTudoAcao()">Limpar</button>
-                <button type="button" class="btn-calc" onclick="calcularTudoAcao()">Calcular Custos</button>
+                <button type="button" class="btn-clear" onclick="limparCampos()">Limpar</button>
+                <button type="button" class="btn-calc" onclick="calcularTudo()">Calcular Custos</button>
             </div>
         </form>
 
-        <div id="resultado" class="result-box" style="display:none;">
-            <h3>📋 Relatório de Custos Aduaneiros & Terminais</h3>
+        <div id="resultado" class="result-box">
+            <h3>📋 Relatório de Custos Aduaneiros</h3>
             <table>
-                <tr><td>Código Pautal (SH):</td><td><b id="res-sh">-</b></td></tr>
+                <tr><td>Código Pautal (SH):</td><td><span id="res-sh">-</span></td></tr>
                 <tr><td>Quantidade Solicitada:</td><td><span id="res-qtd">1</span> un</td></tr>
-                <tr><td>Valor CIF Total (<span id="res-moeda-txt">USD</span>):</td><td><span id="res-cif-orig">0.00</span></td></tr>
-                <tr><td>Valor CIF Total Convertido (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
-                <tr><td>Direitos Aduaneiros Estatais:</td><td><span id="res-direitos">0.00</span> MT</td></tr>
-                <tr><td>ICE (Imposto de Consumo Esp.):</td><td><span id="res-ice">0.00</span> MT</td></tr>
+                <tr><td>Valor CIF Total (Original):</td><td><span id="res-cif-orig">0.00</span> <span id="res-moeda-txt">USD</span></td></tr>
+                <tr><td>Valor CIF Total (Meticais):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
+                <tr><td>Direitos Aduaneiros (Estado):</td><td><span id="res-direitos">0.00</span> MT</td></tr>
+                <tr><td>ICE (Consumos Específicos):</td><td><span id="res-ice">0.00</span> MT</td></tr>
                 <tr><td>IVA Oficial (16%):</td><td><span id="res-iva">0.00</span> MT</td></tr>
-                <tr><td>TSA (Taxa de Serviço Aduaneiro Fixa):</td><td>3.200,00 MT</td></tr>
-                <tr><td>Taxas de Sistemas & Scanner (MCNET / Kudumba):</td><td>2.500,00 MT</td></tr>
-                <tr><td>Tarifas de Armazenagem & Manuseamento Terminal:</td><td>1.500,00 MT</td></tr>
-                <tr class="total-row"><td>CUSTO FINAL TOTAL PARA LEVANTAR:</td><td><span id="res-total">0.00</span> MT</td></tr>
-                <tr><td>Custo Médio por Unidade Colocada:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
+                <tr><td>TSA (Serviço Aduaneiro Fixo):</td><td>3.200,00 MT</td></tr>
+                <tr><td>Taxas MCNET e Kudumba:</td><td>2.500,00 MT</td></tr>
+                <tr><td>Armazenamento e Manuseamento:</td><td>1.500,00 MT</td></tr>
+                <tr class="total-row"><td>CUSTO TOTAL DE LEVANTAMENTO:</td><td><span id="res-total">0.00</span> MT</td></tr>
+                <tr><td>Custo Médio por Unidade:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
             </table>
-            <button type="button" class="btn-pdf" onclick="gerarPdfAcao()">Salvar / Imprimir em PDF</button>
+            <button type="button" class="btn-pdf" onclick="imprimirPdf()">Salvar em PDF</button>
         </div>
     </div>
 
@@ -163,7 +105,7 @@
     </footer>
 
     <script>
-        function mudarMoedaAcao() {
+        function mudarMoeda() {
             var m = document.getElementById("moeda").value;
             var c = document.getElementById("taxa-cambio");
             if (m === "USD") {
@@ -173,27 +115,23 @@
             }
         }
 
-        function limparTudoAcao() {
-            document.getElementById("calc-form").reset();
-            mudarMoedaAcao();
+        function limparCampos() {
+            document.getElementById("meuFormulario").reset();
+            mudarMoeda();
             document.getElementById("resultado").style.display = "none";
         }
 
-        function gerarPdfAcao() {
+        function imprimirPdf() {
             window.print();
         }
 
-        function calcularTudoAcao() {
-            var vUnidade = parseFloat(document.getElementById("valor-cif").value);
+        function calcularTudo() {
+            var v = parseFloat(document.getElementById("valor-cif").value);
             var q = parseInt(document.getElementById("qtd").value) || 1;
-            var tCumbio = parseFloat(document.getElementById("taxa-cambio").value);
+            var t = parseFloat(document.getElementById("taxa-cambio").value);
             
-            if (isNaN(vUnidade) || vUnidade <= 0) {
-                alert("Por favor, introduza um valor CIF unitário válido.");
-                return;
-            }
-            if (isNaN(tCumbio) || tCumbio <= 0) {
-                alert("Por favor, introduza uma taxa de câmbio válida.");
+            if (isNaN(v) || v <= 0 || isNaN(t) || t <= 0) {
+                alert("Por favor, preencha o valor CIF e a taxa de câmbio corretamente.");
                 return;
             }
 
@@ -204,13 +142,32 @@
             var pDir = parseFloat(oDisp.getAttribute("data-direitos")) / 100;
             var pIce = parseFloat(oDisp.getAttribute("data-ice")) / 100;
             var shCod = oDisp.getAttribute("data-sh");
-            
-            var tsa = 3200;
-            var sis = 2500; 
-            var arm = 1500;  
 
-            var cifOrigTotal = vUnidade * q;
-            var cifMznTotal = cifOrigTotal * tCumbio;
+            var cifOrigTotal = v * q;
+            var cifMznTotal = cifOrigTotal * t;
             
             var dirMzn = cifMznTotal * pDir;
             var iceMzn = cifMznTotal * pIce;
+            var baseIva = cifMznTotal + dirMzn + iceMzn;
+            var ivaMzn = baseIva * 0.16;
+
+            var extras Fixo = 3200 + 2500 + 1500; 
+            var finalMzn = cifMznTotal + dirMzn + iceMzn + ivaMzn + extrasFixo;
+            var medioMzn = finalMzn / q;
+
+            document.getElementById("res-sh").innerText = shCod;
+            document.getElementById("res-qtd").innerText = q;
+            document.getElementById("res-cif-orig").innerText = cifOrigTotal.toFixed(2);
+            document.getElementById("res-moeda-txt").innerText = mSel;
+            document.getElementById("res-cif-mt").innerText = cifMznTotal.toFixed(2);
+            document.getElementById("res-direitos").innerText = dirMzn.toFixed(2);
+            document.getElementById("res-ice").innerText = iceMzn.toFixed(2);
+            document.getElementById("res-iva").innerText = ivaMzn.toFixed(2);
+            document.getElementById("res-total").innerText = finalMzn.toFixed(2);
+            document.getElementById("res-por-unidade").innerText = medioMzn.toFixed(2);
+
+            document.getElementById("resultado").style.display = "block";
+        }
+    </script>
+</body>
+</html>
