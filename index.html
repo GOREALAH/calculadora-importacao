@@ -186,7 +186,6 @@
             // Taxas fixas de terminais sem despachante privado
             const tsaConstante = 3200;
             const taxasSistemas = 2500; // MCNET + Kudumba
-            document.getElementById("logistica")
             const taxasArmazem = 1500;  // Terminal mínimo
 
             const taxaDoDia = (moedaSelecionada === "USD") ? taxaUSD : taxaZAR;
@@ -199,7 +198,7 @@
             const baseIVA = cifMT + direitosMT + iceMT;
             const ivaMT = baseIVA * 0.16;
 
-            // Soma total incluindo os custos de terminais especificados
+            // Soma total correta incluindo os custos de terminais especificados
             const totalCustosExtras = direitosMT + iceMT + ivaMT + tsaConstante + taxasSistemas + taxasArmazem;
             const custoFinalTotal = cifMT + totalCustosExtras;
             const custoMedioUnidade = custoFinalTotal / qtd;
