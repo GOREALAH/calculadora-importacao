@@ -128,7 +128,7 @@
                 </div>
                 <div class="col">
                     <label for="taxa-cambio">Taxa de Câmbio (para MT):</label>
-                    <input type="number" id="taxa-cambio" value="63.90" step="0.01">
+                    <input type="number" id="taxa-cambio" value="64.00" step="0.01">
                 </div>
             </div>
 
@@ -167,16 +167,16 @@
             var m = document.getElementById("moeda").value;
             var c = document.getElementById("taxa-cambio");
             if (m === "USD") {
-                c.value = "63.90";
+                c.value = "64.00";
             } else {
-                c.value = "3.50";
+                c.value = "4.00";
             }
         }
 
-        function limparTudoAcao() {
+        fn limparTudoAcao() {
             document.getElementById("calc-form").reset();
             mudarMoedaAcao();
-            document.getElementById("resultado").style.style.display = "none";
+            document.getElementById("resultado").style.display = "none";
         }
 
         function gerarPdfAcao() {
@@ -214,3 +214,4 @@
             
             var dirMzn = cifMznTotal * pDir;
             var iceMzn = cifMznTotal * pIce;
+            var baseIvaMzn = cifMznTotal + dirMzn + iceMzn;
