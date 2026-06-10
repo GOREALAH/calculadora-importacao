@@ -114,7 +114,7 @@
                 </div>
                 <div class="col" style="flex: 1;">
                     <label for="moeda">Moeda:</label>
-                    <select id="moeda" onchange="atualizarCambioPadrao()">
+                    <select id="moeda" onchange="mudarMoedaAcao()">
                         <option value="USD">USD ($)</option>
                         <option value="ZAR">ZAR (R)</option>
                     </select>
@@ -133,8 +133,8 @@
             </div>
 
             <div class="btn-group">
-                <button type="button" class="btn-clear" onclick="limparFormulario()">Limpar</button>
-                <button type="button" class="btn-calc" onclick="calcularImportacaoMzn()">Calcular Custos</button>
+                <button type="button" class="btn-clear" onclick="limparTudoAcao()">Limpar</button>
+                <button type="button" class="btn-calc" onclick="calcularTudoAcao()">Calcular Custos</button>
             </div>
         </form>
 
@@ -154,7 +154,7 @@
                 <tr class="total-row"><td>CUSTO FINAL TOTAL PARA LEVANTAR:</td><td><span id="res-total">0.00</span> MT</td></tr>
                 <tr><td>Custo Médio por Unidade Colocada:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
             </table>
-            <button type="button" class="btn-pdf" onclick="exportarRelatorioPdf()">Salvar / Imprimir em PDF</button>
+            <button type="button" class="btn-pdf" onclick="gerarPdfAcao()">Salvar / Imprimir em PDF</button>
         </div>
     </div>
 
@@ -163,47 +163,54 @@
     </footer>
 
     <script>
-        function atualizarCambioPadrao() {
-            const moeda = document.getElementById("moeda").value;
-            const campoCambio = document.getElementById("taxa-cambio");
-            if (moeda === "USD") {
-                campoCambio.value = "63.90";
+        function mudarMoedaAcao() {
+            var m = document.getElementById("moeda").value;
+            var c = document.getElementById("taxa-cambio");
+            if (m === "USD") {
+                c.value = "63.90";
             } else {
-                campoCambio.value = "3.50";
+                c.value = "3.50";
             }
         }
 
-        function limparFormulario() {
+        function limparTudoAcao() {
             document.getElementById("calc-form").reset();
-            atualizarCambioPadrao();
-            document.getElementById("resultado").style.display = "none";
+            mudarMoedaAcao();
+            document.getElementById("resultado").style.style.display = "none";
         }
 
-        function exportarRelatorioPdf() {
+        function gerarPdfAcao() {
             window.print();
         }
 
-        function calcularImportacaoMzn() {
-            const valorCifUnidade = parseFloat(document.getElementById("valor-cif").value);
-            const qtd = parseInt(document.getElementById("qtd").value) || 1;
-            const taxaDoDia = parseFloat(document.getElementById("taxa-cambio").value);
+        function calcularTudoAcao() {
+            var vUnidade = parseFloat(document.getElementById("valor-cif").value);
+            var q = parseInt(document.getElementById("qtd").value) || 1;
+            var tCumbio = parseFloat(document.getElementById("taxa-cambio").value);
             
-            if (isNaN(valorCifUnidade) || valorCifUnidade <= 0) {
+            if (isNaN(vUnidade) || vUnidade <= 0) {
                 alert("Por favor, introduza um valor CIF unitário válido.");
                 return;
             }
-            if (isNaN(taxaDoDia) || taxaDoDia <= 0) {
+            if (isNaN(tCumbio) || tCumbio <= 0) {
                 alert("Por favor, introduza uma taxa de câmbio válida.");
                 return;
             }
 
-            const moedaSelecionada = document.getElementById("moeda").value;
-            const selectDispositivo = document.getElementById("dispositivo");
-            const opcaoDispositivo = selectDispositivo.options[selectDispositivo.selectedIndex];
+            var mSel = document.getElementById("moeda").value;
+            var sDisp = document.getElementById("dispositivo");
+            var oDisp = sDisp.options[sDisp.selectedIndex];
             
-            const pDireitos = parseFloat(opcaoDispositivo.getAttribute("data-direitos")) / 100;
-            const pICE = parseFloat(opcaoDispositivo.getAttribute("data-ice")) / 100;
-            const sh = opcaoDispositivo.getAttribute("data-sh");
+            var pDir = parseFloat(oDisp.getAttribute("data-direitos")) / 100;
+            var pIce = parseFloat(oDisp.getAttribute("data-ice")) / 100;
+            var shCod = oDisp.getAttribute("data-sh");
             
-            const tsaConstante = 3200;
-            const taxasSistemas = 2500; 
+            var tsa = 3200;
+            var sis = 2500; 
+            var arm = 1500;  
+
+            var cifOrigTotal = vUnidade * q;
+            var cifMznTotal = cifOrigTotal * tCumbio;
+            
+            var dirMzn = cifMznTotal * pDir;
+            var iceMzn = cifMznTotal * pIce;
