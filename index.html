@@ -11,15 +11,17 @@
             margin: 0;
             padding: 20px;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
         }
         .container {
             background-color: #fff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
+            max-width: 550px;
             width: 100%;
+            margin-bottom: 20px;
         }
         h2 { color: #1e3a8a; margin-top: 0; text-align: center; }
         p { text-align: center; color: #666; font-size: 14px; }
@@ -30,6 +32,14 @@
             border-radius: 6px;
             text-align: center;
             margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
         }
         label { font-weight: bold; display: block; margin-top: 15px; color: #333; }
         select, input {
@@ -47,7 +57,7 @@
             padding: 12px;
             border: none;
             border-radius: 6px;
-            margin-top: 20px;
+            margin-top: 25px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -59,19 +69,26 @@
             padding-top: 20px;
         }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { padding: 10px 0; border-bottom: 1px solid #eee; color: #444; }
+        td { padding: 10px 0; border-bottom: 1px solid #eee; color: #444; font-size: 14px; }
         td:last-child { text-align: right; font-weight: bold; }
         .total-row { font-size: 18px; color: #b91c1c; }
+        footer {
+            margin-top: 10px;
+            color: #777;
+            font-size: 13px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🇲🇿 Calculadora de Importação (CIF)</h2>
-        <p>Atualização de Câmbio Automática (USD para MZN)</p>
+        <h2>🇲🇿 Calculadora de Importação Avançada</h2>
+        <p>Desenvolvido para estimativas aduaneiras em Moçambique</p>
         
         <div class="exchange-box">
-            <strong>Taxa de Câmbio Atual:</strong> 
-            <span id="cambio-val">63.90 (Padrão)</span> MT
+            <strong>Câmbios do Dia:</strong> <br>
+            1 USD = <span id="cambio-usd">63.90</span> MT | 
+            1 ZAR = <span id="cambio-zar">3.50</span> MT
         </div>
 
         <form id="calc-form">
@@ -84,86 +101,127 @@
                 <option value="tv" data-direitos="20" data-ice="10" data-sh="8528.72.00">Televisor / TV (SH 8528.72.00)</option>
             </select>
 
-            <label for="valor-usd">Valor CIF (em USD):</label>
-            <input type="number" id="valor-usd" placeholder="Ex: 500" required step="0.01">
+            <div class="row">
+                <div class="col" style="flex: 2;">
+                    <label for="valor-cif">Valor CIF Unidade:</label>
+                    <input type="number" id="valor-cif" placeholder="Ex: 500" required step="0.01">
+                </div>
+                <div class="col" style="flex: 1;">
+                    <label for="moeda">Moeda:</label>
+                    <select id="moeda">
+                        <option value="USD">USD ($)</option>
+                        <option value="ZAR">ZAR (R)</option>
+                    </select>
+                </div>
+            </div>
 
-            <label for="logistica">Estimativa Logística/Despachante (em MT):</label>
-            <input type="number" id="logistica" value="15000">
+            <div class="row">
+                <div class="col">
+                    <label for="qtd">Quantidade:</label>
+                    <input type="number" id="qtd" value="1" min="1">
+                </div>
+                <div class="col">
+                    <label for="operadora">Canal/Logística:</label>
+                    <select id="operadora" onchange="ajustarLogisticaPadrao()">
+                        <option value="10000">DHL / FedEx (Expresso)</option>
+                        <option value="18000" selected>Despachante Independente</option>
+                        <option value="4000">Aéreo Simples (Só Taxas)</option>
+                    </select>
+                </div>
+            </div>
+
+            <label for="logistica">Custo Logística Personalizado (MT):</label>
+            <input type="number" id="logistica" value="18000">
 
             <button type="button" onclick="calcularCustos()">Calcular Custo Total</button>
         </form>
 
         <div id="resultado" class="result-box" style="display:none;">
-            <h3>📋 Relatório de Custos</h3>
+            <h3>📋 Relatório de Importação</h3>
             <table>
                 <tr><td>Código Pautal (SH):</td><td><b id="res-sh">-</b></td></tr>
-                <tr><td>CIF em Meticais (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
+                <tr><td>Quantidade Total:</td><td><span id="res-qtd">1</span> un</td></tr>
+                <tr><td>Valor CIF Total (Moeda Orig.):</td><td><span id="res-cif-orig">0.00</span> <span id="res-moeda-txt">USD</span></td></tr>
+                <tr><td>Valor CIF Total em Meticais (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
                 <tr><td>Direitos Aduaneiros:</td><td><span id="res-direitos">0.00</span> MT</td></tr>
-                <tr><td>ICE:</td><td><span id="res-ice">0.00</span> MT</td></tr>
-                <tr><td>IVA (16%):</td><td><span id="res-iva">0.00</span> MT</td></tr>
-                <tr><td>TSA (Fixo):</td><td>3,200.00 MT</td></tr>
-                <tr><td>Logística / Despachante:</td><td><span id="res-log">0.00</span> MT</td></tr>
-                <tr class="total-row"><td>CUSTO FINAL ESTIMADO:</td><td><span id="res-total">0.00</span> MT</td></tr>
+                <tr><td>ICE (Imposto de Consumo Esp.):</td><td><span id="res-ice">0.00</span> MT</td></tr>
+                <tr><td>IVA (16% em Moçambique):</td><td><span id="res-iva">0.00</span> MT</td></tr>
+                <tr><td>TSA (Taxa de Serviço Aduaneiro):</td><td>3,200.00 MT</td></tr>
+                <tr><td>Custos de Despacho e Logística:</td><td><span id="res-log">0.00</span> MT</td></tr>
+                <tr class="total-row"><td>CUSTO FINAL TOTAL COLOCODO:</td><td><span id="res-total">0.00</span> MT</td></tr>
+                <tr><td>Custo Médio por Unidade:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
             </table>
         </div>
     </div>
 
-    <script>
-        let taxaCambio = 63.90;
+    <footer>
+        &copy; 2026 Adilson Mazive. Todos os direitos reservados.
+    </footer>
 
-        async function obterCambio() {
+    <script>
+        let taxaUSD = 63.90;
+        let taxaZAR = 3.50;
+
+        async function obterCambios() {
             try {
-                const resposta = await fetch("https://open.er-api.com/v6/latest/USD");
-                if (!resposta.ok) throw new Error("Erro de rede");
+                const resposta = await fetch("https://er-api.com");
+                if (!resposta.ok) throw new Error();
                 const dados = await resposta.json();
-                if(dados && dados.rates && dados.rates.MZN) {
-                    taxaCambio = dados.rates.MZN;
-                    document.getElementById("cambio-val").innerText = taxaCambio.toFixed(2);
+                
+                if(dados && dados.rates) {
+                    if(dados.rates.MZN) taxaUSD = dados.rates.MZN;
+                    if(dados.rates.ZAR) taxaZAR = taxaUSD / dados.rates.ZAR;
+                    
+                    document.getElementById("cambio-usd").innerText = taxaUSD.toFixed(2);
+                    document.getElementById("cambio-zar").innerText = taxaZAR.toFixed(2);
                 }
             } catch (erro) {
-                console.log("Mantendo taxa estável padrão.", erro);
-                document.getElementById("cambio-val").innerText = taxaCambio.toFixed(2) + " (Fixo)";
+                console.log("Usando taxas padrão.");
             }
         }
 
+        function ajustarLogisticaPadrao() {
+            const operadoraSelect = document.getElementById("operadora");
+            document.getElementById("logistica").value = operadoraSelect.value;
+        }
+
         function calcularCustos() {
-            const valorUSD = parseFloat(document.getElementById("valor-usd").value);
-            if (isNaN(valorUSD) || valorUSD <= 0) {
-                alert("Por favor, introduza um valor CIF válido.");
+            const valorCifUnidade = parseFloat(document.getElementById("valor-cif").value);
+            const qtd = parseInt(document.getElementById("qtd").value) || 1;
+            
+            if (isNaN(valorCifUnidade) || valorCifUnidade <= 0) {
+                alert("Por favor, introduza um valor CIF unitário válido.");
                 return;
             }
 
-            const select = document.getElementById("dispositivo");
-            const opcaoSelecionada = select.options[select.selectedIndex];
+            const moedaSelecionada = document.getElementById("moeda").value;
+            const selectDispositivo = document.getElementById("dispositivo");
+            const opcaoDispositivo = selectDispositivo.options[selectDispositivo.selectedIndex];
             
-            const pDireitos = parseFloat(opcaoSelecionada.getAttribute("data-direitos")) / 100;
-            const pICE = parseFloat(opcaoSelecionada.getAttribute("data-ice")) / 100;
-            const sh = opcaoSelecionada.getAttribute("data-sh");
+            const pDireitos = parseFloat(opcaoDispositivo.getAttribute("data-direitos")) / 100;
+            const pICE = parseFloat(opcaoDispositivo.getAttribute("data-ice")) / 100;
+            const sh = opcaoDispositivo.getAttribute("data-sh");
             
             const custoLogistica = parseFloat(document.getElementById("logistica").value) || 0;
             const tsaConstante = 3200;
 
-            const cifMT = valorUSD * taxaCambio;
+            // Define a taxa de câmbio correta baseada na moeda escolhida
+            const taxaDoDia = (moedaSelecionada === "USD") ? taxaUSD : taxaZAR;
+
+            // Cálculos com multiplicador de unidades
+            const cifTotalOriginal = valorCifUnidade * qtd;
+            const cifMT = cifTotalOriginal * taxaDoDia;
+            
             const direitosMT = cifMT * pDireitos;
             const iceMT = cifMT * pICE;
             const baseIVA = cifMT + direitosMT + iceMT;
             const ivaMT = baseIVA * 0.16;
 
             const totalTaxas = direitosMT + iceMT + ivaMT + tsaConstante + custoLogistica;
-            const custoFinal = cifMT + totalTaxas;
+            const custoFinalTotal = cifMT + totalTaxas;
+            const custoMedioUnidade = custoFinalTotal / qtd;
 
+            // Impressão dos resultados no ecrã
             document.getElementById("res-sh").innerText = sh;
-            document.getElementById("res-cif-mt").innerText = cifMT.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-            document.getElementById("res-direitos").innerText = direitosMT.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-            document.getElementById("res-ice").innerText = iceMT.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-            document.getElementById("res-iva").innerText = ivaMT.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-            document.getElementById("res-log").innerText = custoLogistica.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-            document.getElementById("res-total").innerText = custoFinal.toLocaleString('pt-PT', {minimumFractionDigits: 2});
-
-            document.getElementById("resultado").style.display = "block";
-        }
-
-        window.onload = obterCambio;
-    </script>
-</body>
-</html>
+            document.getElementById("res-qtd").innerText = qtd;
+            document.getElementById("res-cif-orig").innerText = cifTotalOriginal.toLocaleString('pt-PT', {minimumFractionDigits: 2});
