@@ -82,11 +82,11 @@
 </head>
 <body>
     <div class="container">
-        <h2>🇲🇿 Calculadora de Importação Avançada</h2>
-        <p>Desenvolvido para estimativas aduaneiras em Moçambique</p>
+        <h2>🇲🇿 Calculadora de Importação (Auto-Despacho)</h2>
+        <p>Modalidade: Levantamento Pessoal no Terminal de Carga</p>
         
         <div class="exchange-box">
-            <strong>Câmbios do Dia:</strong> <br>
+            <strong>Câmbios do Dia Obtidos via API:</strong> <br>
             1 USD = <span id="cambio-usd">63.90</span> MT | 
             1 ZAR = <span id="cambio-zar">3.50</span> MT
         </div>
@@ -115,41 +115,27 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col">
-                    <label for="qtd">Quantidade:</label>
-                    <input type="number" id="qtd" value="1" min="1">
-                </div>
-                <div class="col">
-                    <label for="operadora">Canal/Logística:</label>
-                    <select id="operadora" onchange="ajustarLogisticaPadrao()">
-                        <option value="10000">DHL / FedEx (Expresso)</option>
-                        <option value="18000" selected>Despachante Independente</option>
-                        <option value="4000">Aéreo Simples (Só Taxas)</option>
-                    </select>
-                </div>
-            </div>
+            <label for="qtd">Quantidade de Unidades:</label>
+            <input type="number" id="qtd" value="1" min="1">
 
-            <label for="logistica">Custo Logística Personalizado (MT):</label>
-            <input type="number" id="logistica" value="18000">
-
-            <button type="button" onclick="calcularCustos()">Calcular Custo Total</button>
+            <button type="button" onclick="calcularCustos()">Calcular Custo de Levantamento</button>
         </form>
 
         <div id="resultado" class="result-box" style="display:none;">
-            <h3>📋 Relatório de Importação</h3>
+            <h3>📋 Relatório de Custos Aduaneiros & Terminais</h3>
             <table>
                 <tr><td>Código Pautal (SH):</td><td><b id="res-sh">-</b></td></tr>
-                <tr><td>Quantidade Total:</td><td><span id="res-qtd">1</span> un</td></tr>
-                <tr><td>Valor CIF Total (Moeda Orig.):</td><td><span id="res-cif-orig">0.00</span> <span id="res-moeda-txt">USD</span></td></tr>
-                <tr><td>Valor CIF Total em Meticais (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
-                <tr><td>Direitos Aduaneiros:</td><td><span id="res-direitos">0.00</span> MT</td></tr>
+                <tr><td>Quantidade Solicitada:</td><td><span id="res-qtd">1</span> un</td></tr>
+                <tr><td>Valor CIF Total (<span id="res-moeda-txt">USD</span>):</td><td><span id="res-cif-orig">0.00</span></td></tr>
+                <tr><td>Valor CIF Total Convertido (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
+                <tr><td>Direitos Aduaneiros Estatais:</td><td><span id="res-direitos">0.00</span> MT</td></tr>
                 <tr><td>ICE (Imposto de Consumo Esp.):</td><td><span id="res-ice">0.00</span> MT</td></tr>
-                <tr><td>IVA (16% em Moçambique):</td><td><span id="res-iva">0.00</span> MT</td></tr>
-                <tr><td>TSA (Taxa de Serviço Aduaneiro):</td><td>3,200.00 MT</td></tr>
-                <tr><td>Custos de Despacho e Logística:</td><td><span id="res-log">0.00</span> MT</td></tr>
-                <tr class="total-row"><td>CUSTO FINAL TOTAL COLOCODO:</td><td><span id="res-total">0.00</span> MT</td></tr>
-                <tr><td>Custo Médio por Unidade:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
+                <tr><td>IVA Oficial (16%):</td><td><span id="res-iva">0.00</span> MT</td></tr>
+                <tr><td>TSA (Taxa de Serviço Aduaneiro Fixa):</td><td>3.200,00 MT</td></tr>
+                <tr><td>Taxas de Sistemas & Scanner (MCNET / Kudumba):</td><td>2.500,00 MT</td></tr>
+                <tr><td>Tarifas de Armazenagem & Manuseamento Terminal:</td><td>1.500,00 MT</td></tr>
+                <tr class="total-row"><td>CUSTO FINAL TOTAL PARA LEVANTAR:</td><td><span id="res-total">0.00</span> MT</td></tr>
+                <tr><td>Custo Médio por Unidade Colocada:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
             </table>
         </div>
     </div>
@@ -180,11 +166,6 @@
             }
         }
 
-        function ajustarLogisticaPadrao() {
-            const operadoraSelect = document.getElementById("operadora");
-            document.getElementById("logistica").value = operadoraSelect.value;
-        }
-
         function calcularCustos() {
             const valorCifUnidade = parseFloat(document.getElementById("valor-cif").value);
             const qtd = parseInt(document.getElementById("qtd").value) || 1;
@@ -202,13 +183,14 @@
             const pICE = parseFloat(opcaoDispositivo.getAttribute("data-ice")) / 100;
             const sh = opcaoDispositivo.getAttribute("data-sh");
             
-            const custoLogistica = parseFloat(document.getElementById("logistica").value) || 0;
+            // Taxas fixas de terminais sem despachante privado
             const tsaConstante = 3200;
+            const taxasSistemas = 2500; // MCNET + Kudumba
+            document.getElementById("logistica")
+            const taxasArmazem = 1500;  // Terminal mínimo
 
-            // Define a taxa de câmbio correta baseada na moeda escolhida
             const taxaDoDia = (moedaSelecionada === "USD") ? taxaUSD : taxaZAR;
 
-            // Cálculos com multiplicador de unidades
             const cifTotalOriginal = valorCifUnidade * qtd;
             const cifMT = cifTotalOriginal * taxaDoDia;
             
@@ -217,11 +199,16 @@
             const baseIVA = cifMT + direitosMT + iceMT;
             const ivaMT = baseIVA * 0.16;
 
-            const totalTaxas = direitosMT + iceMT + ivaMT + tsaConstante + custoLogistica;
-            const custoFinalTotal = cifMT + totalTaxas;
+            // Soma total incluindo os custos de terminais especificados
+            const totalCustosExtras = direitosMT + iceMT + ivaMT + tsaConstante + taxasSistemas + taxasArmazem;
+            const custoFinalTotal = cifMT + totalCustosExtras;
             const custoMedioUnidade = custoFinalTotal / qtd;
 
-            // Impressão dos resultados no ecrã
             document.getElementById("res-sh").innerText = sh;
             document.getElementById("res-qtd").innerText = qtd;
-            document.getElementById("res-cif-orig").innerText = cifTotalOriginal.toLocaleString('pt-PT', {minimumFractionDigits: 2});
+            document.getElementById("res-cif-orig").innerText = cifTotalOriginal.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById("res-moeda-txt").innerText = moedaSelecionada;
+            document.getElementById("res-cif-mt").innerText = cifMT.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById("res-direitos").innerText = direitosMT.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById("res-ice").innerText = iceMT.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById("res-iva").innerText = ivaMT.toLocaleString('pt-PT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
