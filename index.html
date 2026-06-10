@@ -41,19 +41,27 @@
             border-radius: 6px;
             box-sizing: border-box;
         }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
         button {
-            width: 100%;
-            background-color: #10b981;
+            flex: 1;
             color: white;
             padding: 12px;
             border: none;
             border-radius: 6px;
-            margin-top: 25px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
         }
-        button:hover { background-color: #059669; }
+        .btn-calc { background-color: #10b981; }
+        .btn-calc:hover { background-color: #059669; }
+        .btn-clear { background-color: #6b7280; }
+        .btn-clear:hover { background-color: #4b5563; }
+        .btn-pdf { background-color: #3b82f6; width: 100%; margin-top: 15px; }
+        .btn-pdf:hover { background-color: #2563eb; }
         .result-box {
             margin-top: 30px;
             border-top: 2px dashed #ddd;
@@ -69,6 +77,12 @@
             font-size: 13px;
             text-align: center;
         }
+        @media print {
+            body { background-color: #fff; padding: 0; }
+            .container { box-shadow: none; max-width: 100%; padding: 0; }
+            form, .btn-group, .btn-pdf, footer { display: none !important; }
+            .result-box { border-top: none; margin-top: 0; padding-top: 0; display: block !important; }
+        }
     </style>
 </head>
 <body>
@@ -80,10 +94,17 @@
             <label for="dispositivo">Tipo de Dispositivo:</label>
             <select id="dispositivo">
                 <option value="telemovel" data-direitos="7.5" data-ice="0" data-sh="8517.12.00">Telemóvel (SH 8517.12.00)</option>
-                <option value="laptop" data-direitos="5" data-ice="0" data-sh="8471.30.00">Computador Portátil (SH 8471.30.00)</option>
+                <option value="laptop" data-direitos="5" data-ice="0" data-sh="8471.30.00">Computador Portátil / Laptop (SH 8471.30.00)</option>
                 <option value="desktop" data-direitos="5" data-ice="0" data-sh="8471.41.00">Computador Desktop (SH 8471.41.00)</option>
-                <option value="monitor" data-direitos="20" data-ice="0" data-sh="8528.52.00">Monitor (SH 8528.52.00)</option>
+                <option value="tablet" data-direitos="5" data-ice="0" data-sh="8471.30.00">Tablet / iPad (SH 8471.30.00)</option>
+                <option value="smartwatch" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Relógio Inteligente / Smartwatch (SH 8517.62.00)</option>
+                <option value="monitor" data-direitos="20" data-ice="0" data-sh="8528.52.00">Monitor de Vídeo (SH 8528.52.00)</option>
                 <option value="tv" data-direitos="20" data-ice="10" data-sh="8528.72.00">Televisor / TV (SH 8528.72.00)</option>
+                <option value="fones" data-direitos="20" data-ice="0" data-sh="8518.30.00">Auscultadores / Fones de Ouvido (SH 8518.30.00)</option>
+                <option value="consola" data-direitos="20" data-ice="10" data-sh="9504.50.00">Consola de Videojogos (SH 9504.50.00)</option>
+                <option value="camara" data-direitos="20" data-ice="0" data-sh="8525.80.00">Câmara Fotográfica / Filmar (SH 8525.80.00)</option>
+                <option value="powerbank" data-direitos="7.5" data-ice="0" data-sh="8504.40.00">Powerbank / Baterias (SH 8504.40.00)</option>
+                <option value="roteador" data-direitos="7.5" data-ice="0" data-sh="8517.62.00">Roteador / Modem Wi-Fi (SH 8517.62.00)</option>
             </select>
 
             <div class="row">
@@ -107,11 +128,14 @@
                 </div>
                 <div class="col">
                     <label for="taxa-cambio">Taxa de Câmbio (para MT):</label>
-                    <input type="number" id="taxa-cambio" value="64" step="0.01">
+                    <input type="number" id="taxa-cambio" value="63.90" step="0.01">
                 </div>
             </div>
 
-            <button type="button" onclick="calcularImportacaoMzn()">Calcular Custo de Levantamento</button>
+            <div class="btn-group">
+                <button type="button" class="btn-clear" onclick="limparFormulario()">Limpar</button>
+                <button type="button" class="btn-calc" onclick="calcularImportacaoMzn()">Calcular Custos</button>
+            </div>
         </form>
 
         <div id="resultado" class="result-box" style="display:none;">
@@ -130,6 +154,7 @@
                 <tr class="total-row"><td>CUSTO FINAL TOTAL PARA LEVANTAR:</td><td><span id="res-total">0.00</span> MT</td></tr>
                 <tr><td>Custo Médio por Unidade Colocada:</td><td><span id="res-por-unidade">0.00</span> MT</td></tr>
             </table>
+            <button type="button" class="btn-pdf" onclick="exportarRelatorioPdf()">Salvar / Imprimir em PDF</button>
         </div>
     </div>
 
@@ -142,10 +167,20 @@
             const moeda = document.getElementById("moeda").value;
             const campoCambio = document.getElementById("taxa-cambio");
             if (moeda === "USD") {
-                campoCambio.value = "64";
+                campoCambio.value = "63.90";
             } else {
-                campoCambio.value = "4";
+                campoCambio.value = "3.50";
             }
+        }
+
+        function limparFormulario() {
+            document.getElementById("calc-form").reset();
+            atualizarCambioPadrao();
+            document.getElementById("resultado").style.display = "none";
+        }
+
+        function exportarRelatorioPdf() {
+            window.print();
         }
 
         function calcularImportacaoMzn() {
@@ -172,34 +207,3 @@
             
             const tsaConstante = 3200;
             const taxasSistemas = 2500; 
-            const taxasArmazem = 1500;  
-
-            const cifTotalOriginal = valorCifUnidade * qtd;
-            const cifMT = cifTotalOriginal * taxaDoDia;
-            
-            const direitosMT = cifMT * pDireitos;
-            const iceMT = cifMT * pICE;
-            const baseIVA = cifMT + direitosMT + iceMT;
-            const ivaMT = baseIVA * 0.16;
-
-            const totalCustosExtras = direitosMT + iceMT + ivaMT + tsaConstante + taxasSistemas + taxasArmazem;
-            const custoFinalTotal = cifMT + totalCustosExtras;
-            const custoMedioUnidade = custoFinalTotal / qtd;
-
-            document.getElementById("res-sh").innerText = sh;
-            document.getElementById("res-qtd").innerText = qtd;
-            
-            document.getElementById("res-cif-orig").innerText = cifTotalOriginal.toFixed(2);
-            document.getElementById("res-moeda-txt").innerText = moedaSelecionada;
-            document.getElementById("res-cif-mt").innerText = cifMT.toFixed(2);
-            document.getElementById("res-direitos").innerText = direitosMT.toFixed(2);
-            document.getElementById("res-ice").innerText = iceMT.toFixed(2);
-            document.getElementById("res-iva").innerText = ivaMT.toFixed(2);
-            document.getElementById("res-total").innerText = custoFinalTotal.toFixed(2);
-            document.getElementById("res-por-unidade").innerText = custoMedioUnidade.toFixed(2);
-
-            document.getElementById("resultado").style.display = "block";
-        }
-    </script>
-</body>
-</html>
