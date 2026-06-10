@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora CIF - Moçambique</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>🇲🇿 Calculadora de Importação (CIF)..</h2>
+        <p>Atualização de Câmbio Automática (USD para MZN)</p>
+        
+        <div class="exchange-box">
+            <strong>Taxa de Câmbio Atual:</strong> 
+            <span id="cambio-val">A carregar...</span> MT
+        </div>
+
+        <form id="calc-form">
+            <label for="dispositivo">Tipo de Dispositivo:</label>
+            <select id="dispositivo" onchange="atualizarTaxas()">
+                <option value="telemovel" data-direitos="7.5" data-ice="0" data-sh="8517.12.00">Telemóvel (SH 8517.12.00)</option>
+                <option value="laptop" data-direitos="5" data-ice="0" data-sh="8471.30.00">Computador Portátil (SH 8471.30.00)</option>
+                <option value="desktop" data-direitos="5" data-ice="0" data-sh="8471.41.00">Computador Desktop (SH 8471.41.00)</option>
+                <option value="monitor" data-direitos="20" data-ice="0" data-sh="8528.52.00">Monitor (SH 8528.52.00)</option>
+                <option value="tv" data-direitos="20" data-ice="10" data-sh="8528.72.00">Televisor / TV (SH 8528.72.00)</option>
+            </select>
+
+            <label for="valor-usd">Valor CIF (em USD):</label>
+            <input type="number" id="valor-usd" placeholder="Ex: 500" required step="0.01">
+
+            <label for="logistica">Estimativa Logística/Despachante (em MT):</label>
+            <input type="number" id="logistica" value="15000">
+
+            <button type="button" onclick="calcularCustos()">Calcular Custo Total</button>
+        </form>
+
+        <div id="resultado" class="result-box" style="display:none;">
+            <h3>📋 Relatório de Custos</h3>
+            <table>
+                <tr><td>Código Pautal (SH):</td><td><b id="res-sh">-</b></td></tr>
+                <tr><td>CIF em Meticais (MT):</td><td><span id="res-cif-mt">0.00</span> MT</td></tr>
+                <tr><td>Direitos Aduaneiros:</td><td><span id="res-direitos">0.00</span> MT</td></tr>
+                <tr><td>ICE:</td><td><span id="res-ice">0.00</span> MT</td></tr>
+                <tr><td>IVA (16%):</td><td><span id="res-iva">0.00</span> MT</td></tr>
+                <tr><td>TSA (Fixo):</td><td>3,200.00 MT</td></tr>
+                <tr><td>Logística / Despachante:</td><td><span id="res-log">0.00</span> MT</td></tr>
+                <tr class="total-row"><td>CUSTO FINAL ESTIMADO:</td><td><span id="res-total">0.00</span> MT</td></tr>
+            </table>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
